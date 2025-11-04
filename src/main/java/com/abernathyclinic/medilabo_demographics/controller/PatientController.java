@@ -4,6 +4,7 @@ import com.abernathyclinic.medilabo_demographics.model.Patient;
 import com.abernathyclinic.medilabo_demographics.service.PatientService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,12 +29,11 @@ public class PatientController {
     }
 
     @PostMapping
-    public String addPatient(@RequestBody Patient patient) {
+    public ResponseEntity<String> addPatient(@RequestBody Patient patient) {
         log.info("POST request received to add new patient: {} {} {}",
                 patient.getFirstName(), patient.getLastName(), patient.getBirthdate());
         patientService.addPatient(patient);
-        //return ResponseEntity.ok("Patient added successfully.");
-        return "redirect:/patients";
+        return ResponseEntity.ok("Patient added successfully.");
     }
 
     @GetMapping("/{id}")
