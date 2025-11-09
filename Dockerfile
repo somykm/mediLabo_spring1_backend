@@ -1,20 +1,13 @@
-FROM alpine:latest
-
-ENTRYPOINT ["java", "-jar", "/app.jar"]
-ADD . /app
-WORKDIR /app
+# Use a base image with Java 17 already installed
+FROM eclipse-temurin:17-jdk-alpine
 EXPOSE 8081
 VOLUME /app/logs
-# Install OpenJDK 17
-RUN apk add --no-cache openjdk17
 
 # Set working directory
-WORKDIR /app
-
-# Copy your JAR file
-COPY target/medilabo-demographics-0.0.1-SNAPSHOT.jar app.jar
+WORKDIR /tmp
+# Copy the built JAR file into the container
+COPY ${JAR_FILE} app.jar
+ARG JAR_FILE=target/*.jar
 
 # Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
-
-CMD npm run start
+ENTRYPOINT ["java", "-jar", "/app.jar"]
