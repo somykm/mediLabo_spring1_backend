@@ -37,8 +37,15 @@ public class PatientController {
     }
 
     @GetMapping("/{id}")
-    public Patient getById(@PathVariable Integer id) {
-        return patientService.getById(id);
+    public ResponseEntity<Patient> getById(@PathVariable Integer id) {
+        log.info("Get request received to find a patient with ID: {}", id);
+        Patient patient = patientService.getById(id);
+
+        if (patient == null) {
+            log.info("There is no patient related to this id:{}", id);
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(patient);
     }
 
     @PutMapping("/{id}")
