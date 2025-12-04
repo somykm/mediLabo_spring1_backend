@@ -1,13 +1,13 @@
-# Use a base image with Java 17 already installed
-FROM eclipse-temurin:17-jdk-alpine
-EXPOSE 8081
+
+FROM maven:3.9.11-eclipse-temurin-21 AS build
+WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
+
+#Run with JDK
+FROM eclipse-temurin:21-jdk-alpine
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 VOLUME /app/logs
-
-# Set working directory
-WORKDIR /tmp
-# Copy the built JAR file into the container
-COPY ${JAR_FILE} app.jar
-ARG JAR_FILE=target/*.jar
-
-# Run the application
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+EXPOSE 8081
+ENTRYPOINT ["java", "-jar", "app.jar"]
