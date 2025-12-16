@@ -5,6 +5,7 @@ import com.abernathyclinic.medilabo_demographics.service.PatientService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,16 @@ public class PatientController {
     public PatientController(PatientService patientService) {
         super();
         this.patientService = patientService;
+    }
+
+    @GetMapping("/hello")
+    public String hello(Authentication auth) {
+        return "Hi, you are login to Patient service" + auth.getName() + "!";
+    }
+
+    @GetMapping("/admin/secret")
+    public String secret(Authentication auth) {
+        return "Admin area (Patient Service), " + auth.getName();
     }
 
     @GetMapping("/all")
