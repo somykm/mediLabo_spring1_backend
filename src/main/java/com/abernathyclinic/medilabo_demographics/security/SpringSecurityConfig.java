@@ -1,33 +1,38 @@
 package com.abernathyclinic.medilabo_demographics.security;
 
 import io.jsonwebtoken.JwtException;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
+
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
-import jakarta.servlet.*;
+
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import java.io.IOException;
 import java.util.List;
+
+import jakarta.servlet.Filter;
+
+import java.util.ArrayList;
 
 @Configuration
 public class SpringSecurityConfig {
-    private final JwtService jwtService = new JwtService();
+    private final JwtService jwtService;
+
+    @Autowired
+    public SpringSecurityConfig(JwtService jwtService) {
+        this.jwtService = jwtService;
+    }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(org.springframework.security.config.annotation.web.builders.HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
@@ -39,33 +44,45 @@ public class SpringSecurityConfig {
                 .exceptionHandling(e -> e.authenticationEntryPoint((req, res, ex) -> {
                     res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 }));
+
         return http.build();
     }
 
     @Bean
     public Filter jwtCookieAuthFilter() {
-        return new Filter() {
-            @Override
-            public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
-                    throws IOException, ServletException {
-                HttpServletRequest request = (HttpServletRequest) req;
-                String token = readJwtFromCookie(request);
-                if (token != null) {
-                    try {
-                        var jws = jwtService.parse(token);
-                        String username = jws.getBody().getSubject();
-                        @SuppressWarnings("unchecked")
-                        List<String> roles = (List<String>) jws.getBody().get("roles");
-                        var authorities = roles.stream()
-                                .map(r -> new SimpleGrantedAuthority("ROLE_" + r))
-                                .toList();
-                        var auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
-                        SecurityContextHolder.getContext().setAuthentication(auth);
-                    } catch (JwtException ignored) {
+        return (req, res, chain) -> {
+            HttpServletRequest request = (HttpServletRequest) req;
+            HttpServletResponse response = (HttpServletResponse) res;
+
+            String token = readJwtFromCookie(request);
+            if (token != null) {
+                try {
+                    var jws = jwtService.parse(token);
+                    String username = jws.getBody().getSubject();
+
+                    Object rolesClaim = jws.getBody().get("roles");
+                    List<String> roles = new ArrayList<>();
+                    if (rolesClaim instanceof List<?>) {
+                        for (Object r : (List<?>) rolesClaim) {
+                            roles.add(String.valueOf(r));
+                        }
                     }
+
+                    var authorities = roles.stream()
+                            .map(r -> new SimpleGrantedAuthority("ROLE_" + r))
+                            .toList();
+
+                    var auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+
+                } catch (JwtException e) {
+                    SecurityContextHolder.clearContext();
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
                 }
-                chain.doFilter(req, res);
             }
+
+            chain.doFilter(req, res);
         };
     }
 

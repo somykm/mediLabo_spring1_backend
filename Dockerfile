@@ -1,13 +1,13 @@
-
-FROM maven:3.9.11-eclipse-temurin-21 AS build
+# Stage 1: build with Maven
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
-COPY . .
+COPY pom.xml .
+COPY src ./src
 RUN mvn clean package -DskipTests
 
-#Run with JDK
+# Stage 2: run with JDK
 FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
-VOLUME /app/logs
 EXPOSE 8081
-ENTRYPOINT ["java", "-jar", "app.jar"]
+COPY --from=build /app/target/medilabo-demographics-*.jar app.jar
+ENTRYPOINT ["java","-jar","app.jar"]
