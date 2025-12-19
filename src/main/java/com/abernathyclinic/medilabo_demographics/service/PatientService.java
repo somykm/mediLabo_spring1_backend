@@ -16,12 +16,11 @@ public class PatientService {
 
     @Autowired
     public PatientService(PatientRepository patientRepository) {
-        super();
         this.patientRepository = patientRepository;
     }
 
     public List<Patient> getAllPatients() {
-        log.info("Fetching all patients from repository.");
+        log.info("Fetching all patients");
         return patientRepository.findAll();
     }
 
@@ -50,7 +49,6 @@ public class PatientService {
             log.debug("Patient information updated: {}", patient);
             return true;
         }
-
         log.warn("No patient found based on provided info for update: {}", id);
         return false;
     }

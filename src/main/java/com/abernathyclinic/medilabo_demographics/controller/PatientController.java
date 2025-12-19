@@ -25,11 +25,13 @@ public class PatientController {
 
     @GetMapping("/hello")
     public String hello(Authentication auth) {
-        return "Hi, you are login to Patient service" + auth.getName() + "!";
+
+        return "Hi, you are logged into Patient service as" + auth.getName() + "!";
     }
 
     @GetMapping("/admin/secret")
     public String secret(Authentication auth) {
+
         return "Admin area (Patient Service), " + auth.getName();
     }
 
@@ -41,7 +43,7 @@ public class PatientController {
 
     @PostMapping
     public ResponseEntity<String> addPatient(@RequestBody Patient patient) {
-        log.info("POST request received to add new patient: {} {} {}",
+        log.info("POST /api/patient - Adding patient {} {} {}",
                 patient.getFirstName(), patient.getLastName(), patient.getBirthdate());
         patientService.addPatient(patient);
         return ResponseEntity.ok("Patient added successfully.");
@@ -53,29 +55,42 @@ public class PatientController {
         Patient patient = patientService.getById(id);
 
         if (patient == null) {
-            log.info("There is no patient related to this id:{}", id);
+            log.info("Patient not found:{}", id);
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(patient);
     }
 
+    //    @PutMapping("/{id}")
+//    public boolean updatePatient(@PathVariable Integer id,
+//                                 @RequestBody Patient updatePatient) {
+//        log.info("PUT request received to update patient with ID: {}", id);
+//        return patientService.updatePatient(id, updatePatient);
+//    }
     @PutMapping("/{id}")
-    public boolean updatePatient(@PathVariable Integer id,
-                                 @RequestBody Patient updatePatient) {
-        log.info("PUT request received to update patient with ID: {}", id);
-        return patientService.updatePatient(id, updatePatient);
+    public ResponseEntity<String> updatePatient(@PathVariable Integer id,
+                                                @RequestBody Patient updatePatient) {
+        log.info("PUT request received to update patient with ID:{}", id);
+
+        boolean updated = patientService.updatePatient(id, updatePatient);
+
+        if (!updated) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok("Patient updated successfully.");
     }
 
     @DeleteMapping("/{id}")
-    public String deletePatient(@PathVariable Integer id) {
-        log.info("DELETE request received for patient: {}", id);
+    public ResponseEntity<String> deletePatient(@PathVariable Integer id) {
+        log.info("DELETE /api/patient/{}", id);
+
         boolean deleted = patientService.deletePatient(id);
-        if (deleted) {
-            log.info("Successfully deleted patient: {}", id);
-            return "Patient deleted successfully.";
-        } else {
-            log.warn("Person not found:{}", id);
-            return "Person not found!";
+
+        if (!deleted) {
+            return ResponseEntity.notFound().build();
         }
+
+        return ResponseEntity.ok("Patient deleted successfully.");
     }
 }
