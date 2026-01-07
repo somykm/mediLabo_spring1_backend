@@ -5,13 +5,11 @@ import com.abernathyclinic.medilabo_demographics.service.PatientService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Slf4j
-@CrossOrigin(origins = "http://localhost:8082")
 @RestController
 @RequestMapping("/api/patient")
 public class PatientController {
@@ -19,20 +17,7 @@ public class PatientController {
 
     @Autowired
     public PatientController(PatientService patientService) {
-        super();
         this.patientService = patientService;
-    }
-
-    @GetMapping("/hello")
-    public String hello(Authentication auth) {
-
-        return "Hi, you are logged into Patient service as" + auth.getName() + "!";
-    }
-
-    @GetMapping("/admin/secret")
-    public String secret(Authentication auth) {
-
-        return "Admin area (Patient Service), " + auth.getName();
     }
 
     @GetMapping("/all")
@@ -61,12 +46,6 @@ public class PatientController {
         return ResponseEntity.ok(patient);
     }
 
-    //    @PutMapping("/{id}")
-//    public boolean updatePatient(@PathVariable Integer id,
-//                                 @RequestBody Patient updatePatient) {
-//        log.info("PUT request received to update patient with ID: {}", id);
-//        return patientService.updatePatient(id, updatePatient);
-//    }
     @PutMapping("/{id}")
     public ResponseEntity<String> updatePatient(@PathVariable Integer id,
                                                 @RequestBody Patient updatePatient) {

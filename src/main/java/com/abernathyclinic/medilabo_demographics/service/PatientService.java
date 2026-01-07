@@ -13,20 +13,18 @@ import java.util.Optional;
 @Service
 public class PatientService {
     private final PatientRepository patientRepository;
-
     @Autowired
     public PatientService(PatientRepository patientRepository) {
         this.patientRepository = patientRepository;
     }
-
     public List<Patient> getAllPatients() {
         log.info("Fetching all patients");
         return patientRepository.findAll();
     }
-
     public void addPatient(Patient patient) {
         log.info("Adding new patient: {} {}", patient.getFirstName(), patient.getLastName());
         patientRepository.save(patient);
+
     }
 
     public Patient getById(Integer id) {
