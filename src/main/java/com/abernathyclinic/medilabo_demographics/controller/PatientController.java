@@ -2,6 +2,7 @@ package com.abernathyclinic.medilabo_demographics.controller;
 
 import com.abernathyclinic.medilabo_demographics.model.Patient;
 import com.abernathyclinic.medilabo_demographics.service.PatientService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,15 +11,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Slf4j
+@AllArgsConstructor
 @RestController
 @RequestMapping("/api/patient")
 public class PatientController {
     private final PatientService patientService;
-
-    @Autowired
-    public PatientController(PatientService patientService) {
-        this.patientService = patientService;
-    }
 
     @GetMapping("/all")
     public List<Patient> getAllPatients() {
@@ -31,7 +28,8 @@ public class PatientController {
         log.info("POST /api/patient - Adding patient {} {} {}",
                 patient.getFirstName(), patient.getLastName(), patient.getBirthdate());
         patientService.addPatient(patient);
-        return ResponseEntity.ok("Patient added successfully.");
+        return ResponseEntity.noContent().build();
+
     }
 
     @GetMapping("/{id}")
@@ -69,7 +67,6 @@ public class PatientController {
         if (!deleted) {
             return ResponseEntity.notFound().build();
         }
-
         return ResponseEntity.ok("Patient deleted successfully.");
     }
 }
